@@ -1,6 +1,6 @@
 from enum import Enum
-
-from sqlalchemy import Column, Float, Integer, String
+from datetime import datetime
+from sqlalchemy import Column, DateTime, Float, Integer, String
 from sqlalchemy.orm import relationship
 
 from database.connection import Base
@@ -28,6 +28,12 @@ class Venda(Base):
         String(50),
         nullable=False,
         default=StatusVenda.EM_LANCAMENTO.value
+    )
+
+    data = Column(
+        DateTime,
+        nullable=False,
+        default=datetime.now
     )
 
     itens = relationship(
