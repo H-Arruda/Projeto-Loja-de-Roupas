@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Gestão da loja{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+  <header class="topbar">
+    <a class="brand" href="{{ url_for('dashboard.index') }}">LOJA <span>Gestão</span></a>
+    <nav aria-label="Navegação principal">
+      <a href="{{ url_for('dashboard.index') }}" {% if request.endpoint == 'dashboard.index' %}aria-current="page"{% endif %}>Visão geral</a>
+      <a href="{{ url_for('produtos.lista') }}" {% if request.blueprint == 'produtos' %}aria-current="page"{% endif %}>Produtos</a>
+    </nav>
+  </header>
+  <main id="conteudo" class="container">
+    {% for category, message in get_flashed_messages(with_categories=true) %}
+      <div class="notice {{ category }}" role="status">{{ message }}</div>
+    {% endfor %}
+    {% if error_message %}
+      <h1>Não foi possível abrir esta página</h1>
+      <p class="notice error" role="alert">{{ error_message }}</p>
+      <a href="{{ url_for('dashboard.index') }}">Voltar ao início</a>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="container footer">Gestão da loja · V1</footer>
+</body>
+</html>

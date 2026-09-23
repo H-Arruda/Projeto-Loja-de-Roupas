@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Visão geral · Gestão da loja{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div><p class="eyebrow">PAINEL DA LOJA</p><h1>Visão geral</h1><p class="muted">Vendas finalizadas em todo o histórico.</p></div>
+  <a class="button" href="{{ url_for('produtos.cadastro') }}">Cadastrar produto</a>
+</div>
+<section class="stats" aria-label="Indicadores de vendas">
+  <article class="card"><h2>Faturamento total</h2><p class="metric">{{ indicadores.faturamento_total | brl }}</p></article>
+  <article class="card"><h2>Vendas finalizadas</h2><p class="metric">{{ indicadores.quantidade_vendas }}</p></article>
+  <article class="card"><h2>Ticket médio</h2><p class="metric">{{ indicadores.ticket_medio | brl }}</p></article>
+</section>
+<div class="columns">
+  <section class="card">
+    <h2>Produtos mais vendidos</h2><p class="muted">Até 5 produtos por quantidade de unidades.</p>
+    {% if mais_vendidos %}
+    <div class="table-wrap"><table><thead><tr><th scope="col">Produto</th><th scope="col" class="number">Unidades</th></tr></thead>
+    <tbody>{% for produto in mais_vendidos %}<tr><td>{{ produto.descricao }}</td><td class="number">{{ produto.quantidade_vendida }}</td></tr>{% endfor %}</tbody></table></div>
+    {% else %}<p class="empty">Ainda não há produtos vendidos em vendas finalizadas.</p>{% endif %}
+  </section>
+  <section class="card">
+    <h2>Atenção ao estoque</h2><p class="muted">Produtos com 5 unidades ou menos, incluindo estoque zero.</p>
+    {% if estoque_baixo %}
+    <div class="table-wrap"><table><thead><tr><th scope="col">Produto</th><th scope="col">Tamanho</th><th scope="col" class="number">Estoque</th></tr></thead>
+    <tbody>{% for produto in estoque_baixo %}<tr><td>{{ produto.descricao }}</td><td>{{ produto.tamanho }}</td><td class="number"><span class="badge">{{ produto.estoque }}</span></td></tr>{% endfor %}</tbody></table></div>
+    {% else %}<p class="empty">Nenhum produto com estoque baixo.</p>{% endif %}
+  </section>
+</div>
+{% endblock %}

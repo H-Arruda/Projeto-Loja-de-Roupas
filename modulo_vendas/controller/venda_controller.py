@@ -1,5 +1,6 @@
 from modulo_vendas.model.item_venda import ItemVenda
-from modulo_vendas.model.venda import Venda
+from modulo_vendas.model.produto import Produto
+from modulo_vendas.model.venda import Venda, StatusVenda
 
 
 class VendaController:
@@ -19,12 +20,22 @@ class VendaController:
         venda,
         produto_id,
         quantidade,
-        valor
+        valor=None
     ):
+        if venda.status != StatusVenda.EM_LANCAMENTO.value:
+            raise ValueError("A venda não está em lançamento.")
+        if type(quantidade) is not int or quantidade <= 0:
+            raise ValueError("A quantidade deve ser um inteiro positivo.")
+
+        produto = self.session.get(Produto, produto_id)
+        if produto is None:
+            raise ValueError("Produto não encontrado.")
+
+        # Mantido na assinatura por compatibilidade; o preço vem do banco.
         item = ItemVenda(
             produto_id=produto_id,
             quantidade=quantidade,
-            valor=valor
+            valor=produto.preco
         )
 
         venda.itens.append(item)

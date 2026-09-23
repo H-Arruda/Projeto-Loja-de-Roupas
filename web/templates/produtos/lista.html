@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Produtos · Gestão da loja{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">CATÁLOGO</p><h1>Produtos</h1><p class="muted">{{ produtos | length }} produto(s) cadastrado(s).</p></div><a class="button" href="{{ url_for('produtos.cadastro') }}">Cadastrar produto</a></div>
+<section class="card">
+  {% if produtos %}
+  <div class="table-wrap"><table>
+    <thead><tr><th scope="col">ID</th><th scope="col">Descrição</th><th scope="col">Tamanho</th><th scope="col">Categoria</th><th scope="col">Marca</th><th scope="col">Fornecedor</th><th scope="col" class="number">Preço</th><th scope="col" class="number">Estoque</th></tr></thead>
+    <tbody>{% for produto in produtos %}<tr>
+      <td>{{ produto.id }}</td><td>{{ produto.descricao }}</td><td>{{ produto.tamanho }}</td>
+      <td>{{ produto.categoria.nome }}</td><td>{{ produto.marca.nome }}</td><td>{{ produto.fornecedor.nome }}</td>
+      <td class="number nowrap">{{ produto.preco | brl }}</td><td class="number">{{ produto.estoque }}</td>
+    </tr>{% endfor %}</tbody>
+  </table></div>
+  {% else %}<div class="empty"><h2>Seu catálogo começa aqui</h2><p>Cadastre o primeiro produto para acompanhar preços e estoque.</p><a href="{{ url_for('produtos.cadastro') }}">Cadastrar produto</a></div>{% endif %}
+</section>
+{% endblock %}

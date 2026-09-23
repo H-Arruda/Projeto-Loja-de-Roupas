@@ -53,6 +53,7 @@ class Venda(Base):
         if self.status != StatusVenda.EM_LANCAMENTO.value:
             raise ValueError("A venda não está em lançamento.")
 
+        self._validar_itens()
         self.calcular_total()
         self.status = StatusVenda.AGUARDANDO_PAGAMENTO.value
 
@@ -62,8 +63,15 @@ class Venda(Base):
             "A venda não está aguardando pagamento."
         )
 
+        self._validar_itens()
+        quantidades = {}
         for item in self.itens:
-            if item.quantidade > item.produto.estoque:
+            quantidades[item.produto_id] = (
+                quantidades.get(item.produto_id, 0) + item.quantidade
+            )
+
+        for item in self.itens:
+            if quantidades[item.produto_id] > item.produto.estoque:
                 raise ValueError(
                     f"Estoque insuficiente para "
                     f"{item.produto.descricao}."
@@ -75,6 +83,13 @@ class Venda(Base):
         )
 
         self.status = StatusVenda.FINALIZADA.value
+
+    def _validar_itens(self):
+        if not self.itens:
+            raise ValueError("A venda deve conter pelo menos um item.")
+        if any(type(item.quantidade) is not int or item.quantidade <= 0
+               for item in self.itens):
+            raise ValueError("A quantidade deve ser um inteiro positivo.")
 
     def cancelar(self):
         if self.status in [
