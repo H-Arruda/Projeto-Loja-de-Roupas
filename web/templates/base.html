@@ -13,6 +13,9 @@
     <nav aria-label="Navegação principal">
       <a href="{{ url_for('dashboard.index') }}" {% if request.endpoint == 'dashboard.index' %}aria-current="page"{% endif %}>Visão geral</a>
       <a href="{{ url_for('produtos.lista') }}" {% if request.blueprint == 'produtos' %}aria-current="page"{% endif %}>Produtos</a>
+      {% for modulo, rotulo in [("categorias", "Categorias"), ("marcas", "Marcas"), ("fornecedores", "Fornecedores")] %}
+      <a href="{{ url_for(modulo ~ '.lista') }}" {% if request.blueprint == modulo %}aria-current="page"{% endif %}>{{ rotulo }}</a>
+      {% endfor %}
     </nav>
   </header>
   <main id="conteudo" class="container">

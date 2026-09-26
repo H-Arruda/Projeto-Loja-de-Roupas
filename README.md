@@ -1,8 +1,9 @@
-# Gestão de loja — interface web V1
+# Gestão de loja — V2 em construção (etapas 1 e 2)
 
 Flask + Jinja2 sobre os Models e Controllers existentes, SQLAlchemy e PostgreSQL.
-Esta etapa inclui somente dashboard inicial, lista e cadastro de produtos.
-Não inclui autenticação, PDV web, dashboard analítico completo ou testes automatizados.
+Inclui dashboard inicial, CRUDs de produtos/categorias/marcas/fornecedores e
+integridade do carrinho no backend. PDV web e analytics completo vêm nas próximas
+etapas. Não inclui autenticação. Há testes de regras, rotas e integração opcional.
 
 ## Executar localmente no Windows (PowerShell)
 
@@ -34,15 +35,16 @@ Espere o banco aceitar conexões. **Somente se for um banco novo**, crie as tabe
 
 Não há migrações nem criação automática de tabelas na inicialização web.
 Antes de cadastrar produtos, devem existir registros em `categoria`, `marca` e
-`fornecedor`. Cadastre-os manualmente no PostgreSQL ou pelo fluxo já utilizado;
-esta versão não cria dados de exemplo nem oferece telas para esses cadastros.
+`fornecedor`. Use as telas de Categorias, Marcas e Fornecedores no menu;
+a aplicação não insere dados de exemplo automaticamente.
 Se alguma dessas listas estiver vazia, o formulário ficará desabilitado.
 
 ```powershell
 .\.venv\Scripts\python.exe -m flask --app web:create_app run
 ```
 
-Abra http://127.0.0.1:5000. Rotas: `/`, `/produtos/` e `/produtos/novo`.
+Abra http://127.0.0.1:5000. Catálogos: `/produtos/`, `/categorias/`, `/marcas/`
+e `/fornecedores/`. Todos possuem listagem, cadastro, edição e exclusão protegida.
 O servidor de desenvolvimento permanece local; a versão não possui autenticação.
 O Docker Compose continua responsável apenas pelo PostgreSQL.
 
@@ -67,8 +69,31 @@ de setembro de 2026. Agora só executa quando chamado diretamente.
 - Vendas vazias e quantidades não inteiras/positivas são rejeitadas na confirmação;
   apenas vendas em lançamento aceitam itens. O estoque é conferido pela soma das
   quantidades de cada produto antes de qualquer baixa.
-- Não foram adicionados bloqueios para vendas concorrentes. A correção de estoque
-  repetido vale dentro de uma venda; concorrência entre caixas permanece fora desta etapa.
+- O Controller de vendas bloqueia e relê venda/produtos nas operações críticas.
+  A edição/exclusão de produto também bloqueia e relê o registro. O formulário de
+  edição carrega um token assinado com o estoque original: se houver uma baixa
+  enquanto ele estava aberto, a edição é rejeitada e precisa ser reaberta.
 - Valores monetários continuam em `Float`, sem alteração do esquema.
-- As dependências foram instaladas somente na `.venv` desta cópia do projeto.
-  Nenhum comando foi executado contra o banco existente durante a implementação.
+- Nenhum comando foi executado contra o banco existente durante a implementação.
+- Produto usado em qualquer item de venda não pode ser excluído. Categoria, marca
+  e fornecedor usados por produtos também não podem ser excluídos. Não há inativação.
+- Produtos aceitam busca literal por descrição e filtros por categoria, marca e
+  estoque: normal (> 5), baixo (1 a 5) e sem estoque (0). Relacionamentos da lista
+  são carregados juntos, evitando consultas adicionais por produto.
+- Alterar categoria/marca de um produto muda sua classificação nos relatórios
+  históricos, conforme o modelo atual. Preços de itens já vendidos são preservados.
+
+## Testes e etapas
+
+```powershell
+python -m unittest discover -s tests -v
+```
+
+Use o Python do ambiente com as dependências instaladas. Testes sem PostgreSQL
+usam objetos em memória e sessões/Controllers simulados. Não comprovam persistência.
+Para testes reais, configure `TEST_DATABASE_URL` no ambiente apontando para um banco
+PostgreSQL exclusivo com nome terminado em `_test`, diferente do banco da aplicação.
+Cada teste usa um schema aleatório próprio, removido ao terminar. Sem essa variável,
+os testes de integração são explicitamente ignorados. Não use o banco de produção.
+
+Detalhes: [etapa 1](docs/etapa_1_v2.md) e [etapa 2](docs/etapa_2_v2.md).

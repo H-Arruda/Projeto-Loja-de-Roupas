@@ -1,57 +1,19 @@
 """Integração opcional: TEST_DATABASE_URL deve apontar para banco dedicado *_test."""
 import os
 import unittest
-import uuid
 from concurrent.futures import ThreadPoolExecutor
 from threading import Barrier
 
 os.environ.setdefault("DB_PORT", "5432")
 
-from sqlalchemy import create_engine, text
-from sqlalchemy.engine import make_url
-from sqlalchemy.orm import sessionmaker
-from database.connection import Base, engine as app_engine
+from postgresql_base import PostgreSQLBase
 from modulo_vendas.model import Categoria, Marca, Fornecedor, Produto, Venda, ItemVenda
 from modulo_vendas.model.venda import StatusVenda
 from modulo_vendas.controller.venda_controller import VendaController
 
 
 @unittest.skipUnless(os.getenv("TEST_DATABASE_URL"), "Configure TEST_DATABASE_URL para PostgreSQL dedicado *_test.")
-class PostgreSQLVendaTest(unittest.TestCase):
-    def setUp(self):
-        url = make_url(os.environ["TEST_DATABASE_URL"])
-        if url.get_backend_name() != "postgresql" or not (url.database or "").endswith("_test"):
-            raise RuntimeError("Use somente um banco PostgreSQL dedicado com nome terminado em _test.")
-        if url.database == app_engine.url.database:
-            raise RuntimeError("O banco de testes não pode ter o nome do banco da aplicação.")
-        # Schema exclusivo, aleatório e descartável; nunca usa tabelas existentes.
-        self.schema = "vendas_test_" + uuid.uuid4().hex
-        self.admin = create_engine(url, connect_args={"connect_timeout": 5})
-        self.addCleanup(self.admin.dispose)
-        with self.admin.begin() as conn:
-            conn.execute(text(f'CREATE SCHEMA "{self.schema}"'))
-        self.addCleanup(self._limpar_schema)
-        self.engine = create_engine(url, connect_args={
-            "connect_timeout": 5,
-            "options": f"-c search_path={self.schema} -c lock_timeout=5000 -c statement_timeout=10000",
-        })
-        self.addCleanup(self.engine.dispose)
-        Base.metadata.create_all(self.engine)
-        self.Session = sessionmaker(bind=self.engine, autoflush=False)
-        with self.Session() as session:
-            categoria, marca, fornecedor = Categoria(nome="Teste"), Marca(nome="Teste"), Fornecedor(nome="Teste")
-            session.add_all([categoria, marca, fornecedor])
-            session.flush()
-            produto = Produto(descricao="Camisa", tamanho="M", preco=50, estoque=5,
-                              categoria_id=categoria.id, marca_id=marca.id, fornecedor_id=fornecedor.id)
-            session.add(produto)
-            session.commit()
-            self.produto_id = produto.id
-
-    def _limpar_schema(self):
-        with self.admin.begin() as conn:
-            conn.execute(text(f'DROP SCHEMA "{self.schema}" CASCADE'))
-
+class PostgreSQLVendaTest(PostgreSQLBase):
     def preparar_venda(self, quantidade=3):
         with self.Session() as session:
             controller = VendaController(session)

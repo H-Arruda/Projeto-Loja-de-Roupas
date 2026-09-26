@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Excluir {{ titulo }} · Gestão da loja{% endblock %}
+{% block content %}
+<div class="page-heading"><h1>Excluir {{ titulo }}</h1></div>
+{% if erro %}<p class="notice error" role="alert">{{ erro }}</p>{% endif %}
+<section class="card product-form"><h2>{{ nome }}</h2><p>A exclusão é permanente e só será permitida se não houver vínculos que precisem ser preservados.</p>
+<form method="post"><input type="hidden" name="csrf_token" value="{{ session['csrf_token'] }}"><div class="actions"><button class="danger" type="submit">Confirmar exclusão</button><a href="{{ voltar }}">Voltar sem excluir</a></div></form>
+</section>
+{% endblock %}

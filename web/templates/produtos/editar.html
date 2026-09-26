@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Editar produto · Gestão da loja{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">CATÁLOGO</p><h1>Editar produto #{{ produto.id }}</h1><p class="muted">Revise os dados antes de salvar.</p></div></div>
+<p class="notice warning">Alterar categoria ou marca também muda a classificação deste produto nos relatórios históricos. Os preços registrados nas vendas são preservados.</p>
+{% if erro %}<p class="notice error" role="alert">{{ erro }}</p><p><a href="{{ url_for('produtos.editar', produto_id=produto.id) }}">Reabrir com os dados atuais</a></p>{% endif %}
+{% include 'produtos/_formulario.html' %}
+{% endblock %}

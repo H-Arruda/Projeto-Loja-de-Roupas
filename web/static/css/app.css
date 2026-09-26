@@ -59,3 +59,14 @@ input, select { width: 100%; min-width: 0; border: 1px solid #9aafb6; border-rad
   .card { padding: 18px; }
   nav { gap: 20px; }
 }
+
+/* Catálogos — etapa 2 */
+nav { flex-wrap: wrap; }
+.filters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 24px; }
+.filters .actions { grid-column: 1 / -1; margin-top: 0; }
+.row-actions { display: flex; gap: 14px; white-space: nowrap; }
+.danger-link { color: #84291e; }
+button.danger { background: #84291e; }
+.stock-normal { background: #dff3e9; color: #18553d; }
+.stock-empty { background: #fce8e6; color: #84291e; }
+@media (max-width: 760px) { .filters { grid-template-columns: 1fr; } }

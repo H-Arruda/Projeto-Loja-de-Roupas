@@ -23,9 +23,16 @@ def create_app():
     from web.routes.dashboard import bp as dashboard_bp
     from web.routes.produtos import bp as produtos_bp
 
+    from web.routes.categorias import bp as categorias_bp
+    from web.routes.marcas import bp as marcas_bp
+    from web.routes.fornecedores import bp as fornecedores_bp
+
     app.teardown_appcontext(close_db)
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(produtos_bp)
+    app.register_blueprint(categorias_bp)
+    app.register_blueprint(marcas_bp)
+    app.register_blueprint(fornecedores_bp)
 
     @app.before_request
     def protect_forms():
