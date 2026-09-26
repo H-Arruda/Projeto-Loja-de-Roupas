@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% from "vendas/_componentes.html" import status_venda %}
+{% block title %}Venda #{{ venda.id }} · Gestão da loja{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">VENDAS / DETALHES</p><h1>Venda #{{ venda.id }}</h1><p class="muted">Criada em {{ venda.data.strftime('%d/%m/%Y às %H:%M') }}</p></div><a class="button secondary" href="{{ url_for('vendas.historico') }}">Voltar ao histórico</a></div>
+<section class="card sale-overview"><div>{{ status_venda(venda.status) }}<p class="muted">{{ unidades }} unidade(s) nesta venda</p></div><div><span class="muted">Total da venda</span><p class="metric">{{ venda.total | brl }}</p></div>{% if pode_cancelar %}<a class="button" href="{{ url_for('vendas.pdv', venda_id=venda.id) }}">Continuar no PDV</a>{% endif %}</section>
+<section class="card"><h2>Itens da venda</h2><p class="muted">Preços unitários registrados no momento da inclusão.</p>
+{% if itens %}<div class="table-wrap"><table><thead><tr><th scope="col">Produto</th><th scope="col">Tamanho</th><th scope="col" class="number">Quantidade</th><th scope="col" class="number">Preço unitário</th><th scope="col" class="number">Subtotal</th></tr></thead><tbody>
+{% for linha in itens %}<tr><td>{{ linha.item.produto.descricao }}</td><td>{{ linha.item.produto.tamanho }}</td><td class="number">{{ linha.item.quantidade }}</td><td class="number nowrap">{{ linha.item.valor | brl }}</td><td class="number nowrap">{{ linha.subtotal | brl }}</td></tr>{% endfor %}
+</tbody></table></div>{% else %}<div class="empty"><h3>Nenhum item nesta venda</h3><p>Os produtos adicionados aparecerão aqui.</p></div>{% endif %}</section>
+{% endblock %}

@@ -83,3 +83,60 @@ class PostgreSQLVendaTest(PostgreSQLBase):
     def test_duas_confirmacoes_da_mesma_venda(self):
         venda_id = self.preparar_venda()
         self._pagamentos_simultaneos([venda_id, venda_id])
+
+    def test_historico_periodo_status_e_detalhes(self):
+        from datetime import datetime
+        with self.Session() as session:
+            c = VendaController(session)
+            venda = c.criar_venda()
+            c.adicionar_item(venda, self.produto_id, 2)
+            venda.data = datetime(2026, 9, 26, 23, 59, 59, 999999)
+            session.commit()
+            venda_id = venda.id
+            outra = c.criar_venda()
+            outra.data = datetime(2026, 9, 27)
+            session.commit()
+            resultado = c.listar(datetime(2026, 9, 26), datetime(2026, 9, 27), StatusVenda.EM_LANCAMENTO.value)
+            self.assertEqual([v.id for v in resultado], [venda_id])
+            detalhe = c.obter_detalhes(venda_id)
+            self.assertEqual(sum(item.quantidade for item in detalhe.itens), 2)
+            session.get(Produto, self.produto_id).preco = 99
+            session.commit()
+            self.assertEqual(c.obter_detalhes(venda_id).itens[0].valor, 50)
+
+    def test_fluxo_web_com_controller_e_postgresql_reais(self):
+        from unittest.mock import patch
+        from web import create_app
+        with patch.dict(os.environ, {"SECRET_KEY": "chave-exclusiva-de-testes"}):
+            app = create_app()
+        app.config["TESTING"] = True
+        with patch("web.db.SessionLocal", self.Session):
+            client = app.test_client()
+            with client.session_transaction() as cookie:
+                cookie["csrf_token"] = "csrf-test"
+            def post(url, **dados):
+                return client.post(url, data=dict(csrf_token="csrf-test", **dados))
+            resposta = post("/vendas/nova")
+            self.assertEqual(resposta.status_code, 303)
+            with self.Session() as session:
+                venda_id = session.query(Venda.id).scalar()
+            base = f"/vendas/{venda_id}"
+            post(base + "/confirmar-itens")  # Venda vazia deve continuar aberta.
+            with self.Session() as session:
+                self.assertEqual(session.get(Venda, venda_id).status, StatusVenda.EM_LANCAMENTO.value)
+            post(base + "/itens", produto_id=self.produto_id, quantidade=2, valor=0.01)
+            with self.Session() as session:
+                item_id = session.query(ItemVenda.id).scalar()
+            post(base + f"/itens/{item_id}/quantidade", acao="aumentar", quantidade=999)
+            post(base + f"/itens/{item_id}/quantidade", acao="diminuir")
+            post(base + "/confirmar-itens")
+            with self.Session() as session:
+                self.assertEqual(session.get(Produto, self.produto_id).estoque, 5)
+            post(base + "/confirmar-pagamento")
+            post(base + "/confirmar-pagamento")  # Não pode baixar novamente.
+            with self.Session() as session:
+                self.assertEqual(session.get(Produto, self.produto_id).estoque, 3)
+                self.assertEqual(session.get(Venda, venda_id).total, 100)
+                self.assertEqual(session.get(Venda, venda_id).status, StatusVenda.FINALIZADA.value)
+            self.assertEqual(client.get(base).status_code, 200)
+            self.assertEqual(client.get("/vendas/").status_code, 200)

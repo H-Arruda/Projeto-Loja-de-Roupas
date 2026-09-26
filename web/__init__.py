@@ -27,9 +27,12 @@ def create_app():
     from web.routes.marcas import bp as marcas_bp
     from web.routes.fornecedores import bp as fornecedores_bp
 
+    from web.routes.vendas import bp as vendas_bp
+
     app.teardown_appcontext(close_db)
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(produtos_bp)
+    app.register_blueprint(vendas_bp)
     app.register_blueprint(categorias_bp)
     app.register_blueprint(marcas_bp)
     app.register_blueprint(fornecedores_bp)

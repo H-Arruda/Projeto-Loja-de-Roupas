@@ -1,0 +1,7 @@
+{% macro status_venda(status) -%}
+{% set classes = {'Em Lançamento': 'lancamento', 'Aguardando Pagamento': 'pagamento', 'Finalizada': 'finalizada', 'Cancelada': 'cancelada'} %}
+<span class="sale-status {{ classes.get(status, '') }}"><span aria-hidden="true">●</span> {{ status }}</span>
+{%- endmacro %}
+{% macro csrf(busca='') -%}
+<input type="hidden" name="csrf_token" value="{{ session['csrf_token'] }}"><input type="hidden" name="q" value="{{ busca }}">
+{%- endmacro %}

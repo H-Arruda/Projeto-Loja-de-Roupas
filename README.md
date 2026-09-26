@@ -1,9 +1,9 @@
-# Gestão de loja — V2 em construção (etapas 1 e 2)
+# Gestão de loja — V2 em construção (etapas 1 a 3)
 
 Flask + Jinja2 sobre os Models e Controllers existentes, SQLAlchemy e PostgreSQL.
 Inclui dashboard inicial, CRUDs de produtos/categorias/marcas/fornecedores e
-integridade do carrinho no backend. PDV web e analytics completo vêm nas próximas
-etapas. Não inclui autenticação. Há testes de regras, rotas e integração opcional.
+PDV web, histórico e detalhes de vendas. O dashboard analítico completo vem nas
+próximas etapas. Não inclui autenticação. Há testes de regras, rotas e integração opcional.
 
 ## Executar localmente no Windows (PowerShell)
 
@@ -96,4 +96,21 @@ PostgreSQL exclusivo com nome terminado em `_test`, diferente do banco da aplica
 Cada teste usa um schema aleatório próprio, removido ao terminar. Sem essa variável,
 os testes de integração são explicitamente ignorados. Não use o banco de produção.
 
-Detalhes: [etapa 1](docs/etapa_1_v2.md) e [etapa 2](docs/etapa_2_v2.md).
+Detalhes: [etapa 1](docs/etapa_1_v2.md), [etapa 2](docs/etapa_2_v2.md) e
+[etapa 3](docs/etapa_3_v2.md).
+
+## Vendas na interface
+
+- `/vendas/nova`: catálogo e botão para iniciar uma venda; abrir a página não grava dados.
+- `/vendas/<id>/pdv`: carrinho, quantidades, remoção, confirmação de itens/pagamento e cancelamento.
+- `/vendas/`: histórico de todos os status, com período e status opcionais.
+- `/vendas/<id>`: detalhes, quantidades, preços registrados e subtotais.
+
+O período considera a data de criação e inclui o dia final inteiro. Os botões de
+quantidade calculam o ajuste no backend sob bloqueio. O carrinho não reserva estoque;
+a disponibilidade é revalidada na confirmação. Preços e totais enviados pelo navegador
+não são usados. A confirmação de pagamento é operacional, sem integração financeira.
+
+A navegação e as telas de vendas usam a paleta verde/bege da V2. Inter e Poppins são
+servidas localmente; as licenças estão em `web/static/fonts`. Em telas pequenas, abra
+a navegação pelo botão Menu. JavaScript cuida apenas desse comportamento visual.

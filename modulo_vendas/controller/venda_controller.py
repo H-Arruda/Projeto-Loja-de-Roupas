@@ -5,7 +5,7 @@ from sqlalchemy.orm import selectinload
 
 from modulo_vendas.model.item_venda import ItemVenda
 from modulo_vendas.model.produto import Produto
-from modulo_vendas.model.venda import Venda
+from modulo_vendas.model.venda import Venda, StatusVenda
 
 
 class VendaController:
@@ -24,6 +24,35 @@ class VendaController:
 
     def buscar_por_id(self, venda_id):
         return self.session.get(Venda, venda_id)
+
+    def obter_detalhes(self, venda_id):
+        return (self.session.query(Venda)
+                .options(selectinload(Venda.itens).joinedload(ItemVenda.produto))
+                .filter(Venda.id == venda_id).one_or_none())
+
+    def listar(self, data_inicio=None, data_fim_exclusivo=None, status=None):
+        if status and status not in {estado.value for estado in StatusVenda}:
+            raise ValueError("Status de venda inválido.")
+        if data_inicio and data_fim_exclusivo and data_inicio >= data_fim_exclusivo:
+            raise ValueError("A data inicial deve ser anterior ou igual à data final.")
+        query = self.session.query(Venda).options(selectinload(Venda.itens))
+        if data_inicio:
+            query = query.filter(Venda.data >= data_inicio)
+        if data_fim_exclusivo:
+            query = query.filter(Venda.data < data_fim_exclusivo)
+        if status:
+            query = query.filter(Venda.status == status)
+        return query.order_by(Venda.data.desc(), Venda.id.desc()).all()
+
+    def ajustar_quantidade(self, venda, item_id, ajuste):
+        # Incremento/decremento calculado sobre o item relido sob bloqueio.
+        with self._operacao(venda) as venda:
+            if type(ajuste) is not int or ajuste not in (-1, 1):
+                raise ValueError("Ajuste de quantidade inválido.")
+            self._bloquear_produtos(venda)
+            item = self._buscar_item(venda, item_id)
+            venda.alterar_quantidade(item, item.quantidade + ajuste)
+        return item
 
     def adicionar_item(self, venda, produto_id, quantidade, valor=None):
         with self._operacao(venda) as venda:

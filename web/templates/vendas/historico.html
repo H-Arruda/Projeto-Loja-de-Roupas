@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% from "vendas/_componentes.html" import status_venda %}
+{% block title %}Histórico de vendas · Gestão da loja{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">VENDAS / CONSULTA</p><h1>Histórico de vendas</h1><p class="muted">Acompanhe vendas abertas, finalizadas e canceladas.</p></div><a class="button" href="{{ url_for('vendas.nova') }}">Nova venda</a></div>
+<form class="card filters history-filters" method="get">
+<div class="field"><label for="inicio">Data inicial</label><input id="inicio" name="inicio" type="date" value="{{ filtros.inicio }}"></div>
+<div class="field"><label for="fim">Data final</label><input id="fim" name="fim" type="date" value="{{ filtros.fim }}"></div>
+<div class="field"><label for="status">Status</label><select id="status" name="status"><option value="">Todos os status</option>{% for estado in estados %}<option value="{{ estado.value }}" {% if filtros.status == estado.value %}selected{% endif %}>{{ estado.value }}</option>{% endfor %}</select></div>
+<div class="actions"><button type="submit">Filtrar vendas</button><a href="{{ url_for('vendas.historico') }}">Limpar</a></div>
+<p class="muted full">O período considera a data de criação da venda e inclui o dia final completo.</p>
+</form>
+{% if erro %}<p class="notice error" role="alert">{{ erro }}</p>{% endif %}
+<section class="card"><div class="section-heading"><h2>Vendas registradas</h2><span class="muted">{{ registros | length }} resultado(s)</span></div>
+{% if registros %}<div class="table-wrap"><table><thead><tr><th scope="col">Venda</th><th scope="col">Data</th><th scope="col">Status</th><th scope="col" class="number">Unidades</th><th scope="col" class="number">Total</th><th scope="col">Ações</th></tr></thead><tbody>
+{% for registro in registros %}{% set venda = registro.venda %}<tr><td>#{{ venda.id }}</td><td class="nowrap">{{ venda.data.strftime('%d/%m/%Y %H:%M') }}</td><td>{{ status_venda(venda.status) }}</td><td class="number">{{ registro.unidades }}</td><td class="number nowrap">{{ venda.total | brl }}</td><td><a href="{{ url_for('vendas.detalhes', venda_id=venda.id) }}">Ver detalhes</a></td></tr>{% endfor %}
+</tbody></table></div>{% elif not erro %}<div class="empty"><h3>{{ 'Nenhuma venda encontrada' if filtros.inicio or filtros.fim or filtros.status else 'Sua primeira venda começa aqui' }}</h3><p>{{ 'Revise o período ou selecione outro status.' if filtros.inicio or filtros.fim or filtros.status else 'Inicie um atendimento no PDV para registrar uma venda.' }}</p><a href="{{ url_for('vendas.nova') }}">Abrir PDV</a></div>{% endif %}</section>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% from "vendas/_componentes.html" import status_venda, csrf with context %}
+{% block title %}PDV · Gestão da loja{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">VENDAS / FRENTE DE CAIXA</p><h1>{{ 'Venda #' ~ venda.id if venda else 'Nova venda' }}</h1><p class="muted">Selecione os produtos e acompanhe o carrinho.</p></div><a class="button secondary" href="{{ url_for('vendas.historico') }}">Histórico de vendas</a></div>
+<div class="pdv-layout">
+<section class="pdv-products" aria-label="Produtos disponíveis">
+  <form class="card sale-search" method="get"><label for="q">Buscar produto</label><div><input type="search" id="q" name="q" value="{{ busca }}" placeholder="Digite a descrição do produto"><button type="submit">Buscar</button></div>{% if busca %}<a href="{{ url_for('vendas.pdv', venda_id=venda.id) if venda else url_for('vendas.nova') }}">Limpar busca</a>{% endif %}</form>
+  <div class="section-heading"><h2>Catálogo de produtos</h2><span class="muted">{{ produtos | length }} resultado(s)</span></div>
+  {% if produtos %}<div class="product-grid">
+  {% for produto in produtos %}<article class="card sale-product">
+    <div class="product-meta"><span class="product-symbol" aria-hidden="true">{{ produto.descricao[:1] | upper }}</span><span class="muted">#{{ produto.id }} · {{ produto.categoria.nome }}</span></div>
+    <h3>{{ produto.descricao }}</h3><p class="muted">{{ produto.marca.nome }} · Tamanho {{ produto.tamanho }}</p>
+    <div class="product-price-row"><strong>{{ produto.preco | brl }}</strong><span class="badge {{ 'stock-empty' if produto.estoque <= 0 else ('stock-normal' if produto.estoque > 5 else '') }}">{{ produto.estoque }} em estoque</span></div>
+    {% if venda and em_lancamento and produto.estoque > 0 %}
+    <form method="post" action="{{ url_for('vendas.adicionar_item', venda_id=venda.id) }}" class="add-product">{{ csrf(busca) }}<input type="hidden" name="produto_id" value="{{ produto.id }}"><label class="sr-only" for="qtd-{{ produto.id }}">Quantidade de {{ produto.descricao }}</label><input id="qtd-{{ produto.id }}" type="number" name="quantidade" value="1" min="1" step="1" required><button type="submit">Adicionar</button></form>
+    {% elif produto.estoque <= 0 %}<p class="product-unavailable">Indisponível para venda</p>{% elif not venda %}<p class="muted product-unavailable">Inicie a venda para adicionar.</p>{% endif %}
+  </article>{% endfor %}</div>
+  {% else %}<div class="card empty"><h2>{{ 'Nenhum resultado encontrado' if busca else 'Seu catálogo está vazio' }}</h2><p>{{ 'Tente outra descrição ou limpe a busca.' if busca else 'Cadastre produtos para começar a vender.' }}</p><a href="{{ url_for('produtos.cadastro') }}">Cadastrar produto</a></div>{% endif %}
+</section>
+<aside class="card cart" aria-label="Carrinho e resumo da venda">
+  <div class="section-heading"><h2>Resumo da venda</h2>{% if venda %}<span class="muted">#{{ venda.id }}</span>{% endif %}</div>
+  {% if not venda %}
+  <div class="empty"><div class="empty-symbol" aria-hidden="true">＋</div><h3>Pronto para uma nova venda?</h3><p>Inicie o atendimento para montar o carrinho.</p></div><form action="{{ url_for('vendas.criar') }}" method="post">{{ csrf(busca) }}<button class="wide" type="submit">Iniciar venda</button></form>
+  {% else %}
+  {{ status_venda(venda.status) }}<p class="cart-date muted">Aberta em {{ venda.data.strftime('%d/%m/%Y às %H:%M') }}</p>
+  {% if itens %}<div class="cart-items">
+  {% for linha in itens %}{% set item = linha.item %}<article class="cart-item">
+    <div class="section-heading"><h3>{{ item.produto.descricao }}</h3><strong>{{ linha.subtotal | brl }}</strong></div>
+    <p class="muted">Tamanho {{ item.produto.tamanho }} · {{ item.valor | brl }} / unidade</p>
+    {% if em_lancamento %}
+    <div class="cart-item-actions"><form class="quantity-control" action="{{ url_for('vendas.quantidade', venda_id=venda.id, item_id=item.id) }}" method="post">{{ csrf(busca) }}
+      <button class="sr-only" type="submit" name="acao" value="definir" tabindex="-1">Aplicar quantidade</button>
+      <button class="quantity-button" type="submit" name="acao" value="diminuir" aria-label="Diminuir quantidade de {{ item.produto.descricao }}" {% if item.quantidade <= 1 %}disabled{% endif %}>−</button>
+      <label class="sr-only" for="item-{{ item.id }}">Quantidade de {{ item.produto.descricao }}</label><input id="item-{{ item.id }}" name="quantidade" value="{{ item.quantidade }}" type="number" min="1" step="1" required>
+      <button class="quantity-button" type="submit" name="acao" value="aumentar" aria-label="Aumentar quantidade de {{ item.produto.descricao }}">+</button><button type="submit" name="acao" value="definir" class="save-quantity">Aplicar</button>
+    </form><form action="{{ url_for('vendas.remover_item', venda_id=venda.id, item_id=item.id) }}" method="post">{{ csrf(busca) }}<button class="text-button danger-link" type="submit" aria-label="Remover {{ item.produto.descricao }}">Remover</button></form></div>
+    {% else %}<p class="item-quantity">{{ item.quantidade }} unidade(s)</p>{% endif %}
+  </article>{% endfor %}</div>
+  {% else %}<div class="empty"><h3>O carrinho está vazio</h3><p>Adicione produtos para confirmar os itens.</p></div>{% endif %}
+  <div class="cart-total"><div><span>Total da venda</span><small>{{ unidades }} unidade(s)</small></div><strong>{{ venda.total | brl }}</strong></div>
+  {% if em_lancamento %}<form action="{{ url_for('vendas.confirmar_itens', venda_id=venda.id) }}" method="post">{{ csrf(busca) }}<button class="wide" type="submit" {% if not itens %}disabled{% endif %}>Confirmar itens</button></form><p class="cart-hint muted">O estoque será baixado somente após confirmar o pagamento.</p>
+  {% elif aguardando_pagamento %}<div class="notice warning">Itens confirmados. Confira o total e confirme apenas após receber o pagamento.</div><form action="{{ url_for('vendas.confirmar_pagamento', venda_id=venda.id) }}" method="post">{{ csrf(busca) }}<button class="wide" type="submit">Confirmar pagamento · {{ venda.total | brl }}</button></form>
+  {% elif venda.status == 'Finalizada' %}<p class="notice success">Venda finalizada. O estoque foi atualizado.</p><a class="button wide" href="{{ url_for('vendas.nova') }}">Nova venda</a>
+  {% elif venda.status == 'Cancelada' %}<p class="notice warning">Esta venda foi cancelada e não pode ser alterada.</p><a class="button wide" href="{{ url_for('vendas.nova') }}">Nova venda</a>{% endif %}
+  {% if pode_cancelar %}<details class="cancel-sale"><summary>Cancelar venda</summary><p>Esta ação encerra a venda sem baixar estoque.</p><form action="{{ url_for('vendas.cancelar', venda_id=venda.id) }}" method="post">{{ csrf(busca) }}<button class="danger wide" type="submit">Confirmar cancelamento</button></form></details>{% endif %}
+  <a class="cart-details" href="{{ url_for('vendas.detalhes', venda_id=venda.id) }}">Ver detalhes da venda</a>
+  {% endif %}
+</aside>
+</div>
+{% endblock %}

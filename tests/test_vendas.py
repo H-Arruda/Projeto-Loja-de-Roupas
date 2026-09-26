@@ -158,6 +158,25 @@ class ControllerVendaTest(unittest.TestCase):
         self.session.add.assert_called_once_with(venda)
         self.session.commit.assert_called_once()
 
+    def test_ajuste_incremental_preserva_preco_e_total(self):
+        item = self.controller.adicionar_item(self.venda, 1, 2)
+        item.id = 7
+        self.produto.preco = 99
+        self.controller.ajustar_quantidade(self.venda, 7, 1)
+        self.assertEqual(item.quantidade, 3)
+        self.assertEqual(self.venda.total, 150)
+        self.controller.ajustar_quantidade(self.venda, 7, -1)
+        self.assertEqual(item.quantidade, 2)
+        with self.assertRaises(ValueError):
+            self.controller.ajustar_quantidade(self.venda, 7, 10)
+
+    def test_listar_rejeita_status_e_periodo_invalidos(self):
+        from datetime import datetime
+        with self.assertRaises(ValueError):
+            self.controller.listar(status="Inválida")
+        with self.assertRaises(ValueError):
+            self.controller.listar(datetime(2026, 9, 5), datetime(2026, 9, 4))
+
     def test_item_de_outra_venda_nao_e_removido(self):
         with self.assertRaises(ValueError):
             self.controller.remover_item(self.venda, 999)
