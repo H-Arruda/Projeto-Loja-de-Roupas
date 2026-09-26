@@ -1,34 +1,38 @@
+{% from 'components/ui.html' import icon, empty_state %}
 <!doctype html>
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Gestão da loja{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
 </head>
 <body>
   <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
-  <header class="mobile-header"><a href="{{ url_for('dashboard.index') }}">LOJA <span>Gestão</span></a><button type="button" id="menu-toggle" aria-controls="sidebar" aria-expanded="false">Menu</button></header>
+  <header class="mobile-header"><a href="{{ url_for('dashboard.index') }}">LOJA <span>Gestão de moda</span></a><button type="button" id="menu-toggle" aria-controls="sidebar" aria-expanded="false">{{ icon('menu') }} <span>Menu</span></button></header>
   <aside class="sidebar" id="sidebar">
-    <a class="brand" href="{{ url_for('dashboard.index') }}">LOJA <span>GESTÃO & ESTOQUE</span></a>
+    <a class="brand" href="{{ url_for('dashboard.index') }}"><span class="brand-mark">L<span></span></span><span class="brand-name">LOJA<small>GESTÃO DE MODA</small></span></a>
     <nav aria-label="Navegação principal">
-      <a href="{{ url_for('dashboard.index') }}" {% if request.endpoint == 'dashboard.index' %}aria-current="page"{% endif %}><span aria-hidden="true">▦</span> Dashboard</a>
+      <p class="nav-group">Visão geral</p>
+      <a href="{{ url_for('dashboard.index') }}" {% if request.endpoint == 'dashboard.index' %}aria-current="page"{% endif %}>{{ icon('dashboard') }} Dashboard</a>
       <p class="nav-group">Vendas</p>
-      <a href="{{ url_for('vendas.nova') }}" {% if request.endpoint in ['vendas.nova', 'vendas.pdv'] %}aria-current="page"{% endif %}><span aria-hidden="true">＋</span> Nova venda / PDV</a>
-      <a href="{{ url_for('vendas.historico') }}" {% if request.endpoint in ['vendas.historico', 'vendas.detalhes'] %}aria-current="page"{% endif %}><span aria-hidden="true">≡</span> Histórico</a>
+      <a href="{{ url_for('vendas.nova') }}" {% if request.endpoint in ['vendas.nova', 'vendas.pdv'] %}aria-current="page"{% endif %}>{{ icon('bag') }} Nova venda</a>
+      <a href="{{ url_for('vendas.historico') }}" {% if request.endpoint in ['vendas.historico', 'vendas.detalhes'] %}aria-current="page"{% endif %}>{{ icon('history') }} Histórico</a>
       <p class="nav-group">Catálogo</p>
       {% for modulo, rotulo in [('produtos', 'Produtos'), ('categorias', 'Categorias'), ('marcas', 'Marcas'), ('fornecedores', 'Fornecedores')] %}
-      <a href="{{ url_for(modulo ~ '.lista') }}" {% if request.blueprint == modulo %}aria-current="page"{% endif %}><span aria-hidden="true">·</span> {{ rotulo }}</a>
+      <a href="{{ url_for(modulo ~ '.lista') }}" {% if request.blueprint == modulo %}aria-current="page"{% endif %}>{{ icon({'produtos':'box', 'categorias':'tag', 'marcas':'mark', 'fornecedores':'truck'}[modulo]) }} {{ rotulo }}</a>
       {% endfor %}
     </nav>
-    <div class="sidebar-foot">Gestão de vendas<br><span>Catálogo e controle de estoque</span></div>
+    <div class="sidebar-foot"><span class="sidebar-dot"></span><div>Seu negócio, organizado.<small>Vendas · Catálogo · Estoque</small></div></div>
   </aside>
-  <main id="conteudo" class="container">
+  <button class="menu-backdrop" type="button" aria-label="Fechar menu" tabindex="-1" hidden></button>
+  <main id="conteudo" class="container" tabindex="-1">
     {% for category, message in get_flashed_messages(with_categories=true) %}
       <div class="notice {{ category }}" role="status">{{ message }}</div>
     {% endfor %}
     {% if error_message %}
-      <h1>Não foi possível abrir esta página</h1>
+      <div class="page-heading"><div><p class="eyebrow">GESTÃO / ATENDIMENTO</p><h1>Não foi possível abrir esta página</h1></div></div>
       <p class="notice error" role="alert">{{ error_message }}</p>
       <a href="{{ url_for('dashboard.index') }}">Voltar ao início</a>
     {% endif %}

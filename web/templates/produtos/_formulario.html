@@ -1,19 +1,15 @@
 {% set pode_cadastrar = categorias and marcas and fornecedores %}
 {% if not pode_cadastrar %}<p class="notice warning" role="alert">O produto precisa de categoria, marca e fornecedor. Complete os cadastros que faltam pelos links do menu antes de continuar.</p>{% endif %}
 <form class="card product-form" method="post">
-  <input type="hidden" name="csrf_token" value="{{ session['csrf_token'] }}">
-  {% if estoque_token %}<input type="hidden" name="estoque_token" value="{{ estoque_token }}">{% endif %}
-  <fieldset {% if not pode_cadastrar %}disabled{% endif %}>
-    <legend>Dados do produto</legend>
-    <div class="form-grid">
-      <div class="field full"><label for="descricao">Descrição</label><input id="descricao" name="descricao" maxlength="180" required value="{{ dados.get('descricao', '') }}"></div>
-      <div class="field"><label for="preco">Preço (R$)</label><input id="preco" name="preco" inputmode="decimal" required aria-describedby="preco-ajuda" value="{{ dados.get('preco', '') }}"><small id="preco-ajuda">Exemplo: 129,90. Sem separador de milhar.</small></div>
-      <div class="field"><label for="tamanho">Tamanho</label><input id="tamanho" name="tamanho" maxlength="20" required placeholder="Ex.: M ou 42" value="{{ dados.get('tamanho', '') }}"></div>
-      <div class="field"><label for="estoque">{{ "Estoque atual" if produto else "Estoque inicial" }}</label><input id="estoque" name="estoque" type="number" min="0" max="2147483647" step="1" required value="{{ dados.get('estoque', '0') }}"></div>
-      {% for campo, rotulo, opcoes in [('categoria_id', 'Categoria', categorias), ('marca_id', 'Marca', marcas), ('fornecedor_id', 'Fornecedor', fornecedores)] %}
-      <div class="field"><label for="{{ campo }}">{{ rotulo }}</label><select id="{{ campo }}" name="{{ campo }}" required><option value="">Selecione</option>{% for opcao in opcoes %}<option value="{{ opcao.id }}" {% if dados.get(campo, '') == opcao.id | string %}selected{% endif %}>{{ opcao.nome }}</option>{% endfor %}</select></div>
-      {% endfor %}
-    </div>
-    <div class="actions"><button type="submit">Salvar produto</button><a href="{{ url_for('produtos.lista') }}">Voltar à lista</a></div>
-  </fieldset>
-</form>
+<input type="hidden" name="csrf_token" value="{{ session['csrf_token'] }}">{% if estoque_token %}<input type="hidden" name="estoque_token" value="{{ estoque_token }}">{% endif %}
+<fieldset {% if not pode_cadastrar %}disabled{% endif %}>
+<legend class="sr-only">Dados do produto</legend>
+<section class="form-section"><div class="form-section-heading"><span class="form-step">01</span><div><h2>Informações do produto</h2><p>Identifique a peça e defina o preço de venda.</p></div></div>
+<div class="form-grid"><div class="field full"><label for="descricao">Descrição <span aria-hidden="true">*</span></label><input id="descricao" name="descricao" maxlength="180" required placeholder="Ex.: Camisa de linho" value="{{ dados.get('descricao', '') }}"></div>
+<div class="field"><label for="preco">Preço de venda (R$) <span aria-hidden="true">*</span></label><input id="preco" name="preco" inputmode="decimal" required aria-describedby="preco-ajuda" value="{{ dados.get('preco', '') }}" placeholder="0,00"><small id="preco-ajuda">Exemplo: 129,90. Sem separador de milhar.</small></div>
+<div class="field"><label for="tamanho">Tamanho <span aria-hidden="true">*</span></label><input id="tamanho" name="tamanho" maxlength="20" required placeholder="Ex.: M ou 42" value="{{ dados.get('tamanho', '') }}"></div></div></section>
+<section class="form-section"><div class="form-section-heading"><span class="form-step">02</span><div><h2>Estoque</h2><p>Informe a quantidade disponível na loja.</p></div></div><div class="field stock-field"><label for="estoque">{{ "Estoque atual" if produto else "Estoque inicial" }} <span aria-hidden="true">*</span></label><input id="estoque" name="estoque" type="number" min="0" max="2147483647" step="1" required value="{{ dados.get('estoque', '0') }}"></div></section>
+<section class="form-section"><div class="form-section-heading"><span class="form-step">03</span><div><h2>Classificação</h2><p>Organize o produto no catálogo da loja.</p></div></div><div class="form-grid three-columns">
+{% for campo, rotulo, opcoes in [('categoria_id', 'Categoria', categorias), ('marca_id', 'Marca', marcas), ('fornecedor_id', 'Fornecedor', fornecedores)] %}<div class="field"><label for="{{ campo }}">{{ rotulo }} <span aria-hidden="true">*</span></label><select id="{{ campo }}" name="{{ campo }}" required><option value="">Selecione</option>{% for opcao in opcoes %}<option value="{{ opcao.id }}" {% if dados.get(campo, '') == opcao.id | string %}selected{% endif %}>{{ opcao.nome }}</option>{% endfor %}</select></div>{% endfor %}</div></section>
+<div class="form-actions"><a class="button secondary" href="{{ url_for('produtos.lista') }}">Cancelar</a><button type="submit">{{ icon('check', 17) }} {{ 'Salvar alterações' if produto else 'Cadastrar produto' }}</button></div>
+</fieldset></form>

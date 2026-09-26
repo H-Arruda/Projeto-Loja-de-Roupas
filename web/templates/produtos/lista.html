@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Produtos · Gestão da loja{% endblock %}
 {% block content %}
-<div class="page-heading"><div><p class="eyebrow">CATÁLOGO</p><h1>Produtos</h1><p class="muted">{{ produtos | length }} produto(s) encontrado(s).</p></div><a class="button" href="{{ url_for('produtos.cadastro') }}">Cadastrar produto</a></div>
+<div class="page-heading"><div><p class="eyebrow">CATÁLOGO / PRODUTOS</p><h1>Produtos</h1><p class="muted">Gerencie o catálogo e o estoque da loja.</p></div><a class="button" href="{{ url_for('produtos.cadastro') }}">{{ icon('plus', 17) }} Novo produto</a></div>
 <form class="card filters" method="get">
   <div class="field"><label for="descricao">Buscar descrição</label><input id="descricao" name="descricao" value="{{ filtros.descricao }}" placeholder="Ex.: camisa"></div>
   {% for campo, rotulo, opcoes in [('categoria_id', 'Categoria', categorias), ('marca_id', 'Marca', marcas)] %}
@@ -10,18 +10,18 @@
   <div class="field"><label for="estoque">Estoque</label><select id="estoque" name="estoque"><option value="">Todos</option>{% for valor, rotulo in [('normal', 'Normal (acima de 5)'), ('baixo', 'Baixo (1 a 5)'), ('sem', 'Sem estoque (0)')] %}<option value="{{ valor }}" {% if filtros.estoque == valor %}selected{% endif %}>{{ rotulo }}</option>{% endfor %}</select></div>
   <div class="actions"><button type="submit">Filtrar</button><a href="{{ url_for('produtos.lista') }}">Limpar</a></div>
 </form>
-<section class="card">
+<section class="card table-card"><div class="section-heading"><h2>Catálogo de produtos</h2><span class="result-count">{{ produtos | length }} produto(s)</span></div>
   {% if produtos %}
-  <div class="table-wrap"><table>
-    <thead><tr><th scope="col">Descrição</th><th scope="col">Tamanho</th><th scope="col">Categoria</th><th scope="col">Marca</th><th scope="col">Fornecedor</th><th scope="col" class="number">Preço</th><th scope="col" class="number">Estoque</th><th scope="col">Situação</th><th scope="col">Ações</th></tr></thead>
+  <div class="table-wrap" tabindex="0" role="region" aria-label="Lista de produtos"><table>
+    <thead><tr><th scope="col">Descrição</th><th scope="col">Tamanho</th><th scope="col">Categoria</th><th scope="col">Marca</th><th scope="col">Fornecedor</th><th scope="col" class="number">Preço</th><th scope="col" class="number">Estoque</th><th scope="col">Situação</th><th scope="col" class="actions-heading">Ações</th></tr></thead>
     <tbody>{% for produto in produtos %}<tr>
       <td>{{ produto.descricao }}</td><td>{{ produto.tamanho }}</td>
       <td>{{ produto.categoria.nome }}</td><td>{{ produto.marca.nome }}</td><td>{{ produto.fornecedor.nome }}</td>
       <td class="number nowrap">{{ produto.preco | brl }}</td><td class="number">{{ produto.estoque }}</td>
-      <td class="nowrap">{% if produto.estoque < 0 %}<span class="badge stock-empty">Inconsistente</span>{% elif produto.estoque == 0 %}<span class="badge stock-empty">Sem estoque</span>{% elif produto.estoque <= 5 %}<span class="badge">Baixo</span>{% else %}<span class="badge stock-normal">Normal</span>{% endif %}</td>
-      <td><div class="row-actions"><a href="{{ url_for('produtos.editar', produto_id=produto.id) }}">Editar</a><a class="danger-link" href="{{ url_for('produtos.excluir', produto_id=produto.id) }}">Excluir</a></div></td>
+      <td class="nowrap">{% if produto.estoque < 0 %}<span class="badge stock-empty">Inconsistente</span>{% elif produto.estoque == 0 %}<span class="badge stock-empty">Sem estoque</span>{% elif produto.estoque <= 5 %}<span class="badge">Estoque baixo</span>{% else %}<span class="badge stock-normal">Em estoque</span>{% endif %}</td>
+      <td><div class="row-actions"><a class="button secondary small" href="{{ url_for('produtos.editar', produto_id=produto.id) }}" aria-label="Editar {{ produto.descricao }}">{{ icon('edit', 15) }} Editar</a><a class="button danger-soft small" href="{{ url_for('produtos.excluir', produto_id=produto.id) }}" aria-label="Excluir {{ produto.descricao }}">{{ icon('trash', 15) }} Excluir</a></div></td>
     </tr>{% endfor %}</tbody>
   </table></div>
-  {% else %}<div class="empty">{% if filtros.descricao or filtros.categoria_id or filtros.marca_id or filtros.estoque %}<h2>Nenhum resultado encontrado</h2><p>Experimente outra descrição ou remova os filtros.</p><a href="{{ url_for('produtos.lista') }}">Limpar filtros</a>{% else %}<h2>Seu catálogo começa aqui</h2><p>Cadastre o primeiro produto para acompanhar preços e estoque.</p><a href="{{ url_for('produtos.cadastro') }}">Cadastrar produto</a>{% endif %}</div>{% endif %}
+  {% else %}{% if filtros.descricao or filtros.categoria_id or filtros.marca_id or filtros.estoque %}{{ empty_state('Nenhum resultado encontrado', 'Experimente outra descrição ou remova os filtros.', 'search', url_for('produtos.lista'), 'Limpar filtros') }}{% else %}{{ empty_state('Seu catálogo começa aqui', 'Cadastre o primeiro produto para acompanhar preços e estoque.', 'box', url_for('produtos.cadastro'), 'Cadastrar produto') }}{% endif %}{% endif %}
 </section>
 {% endblock %}

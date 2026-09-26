@@ -9,7 +9,7 @@
   <div class="section-heading"><h2>Catálogo de produtos</h2><span class="muted">{{ produtos | length }} resultado(s)</span></div>
   {% if produtos %}<div class="product-grid">
   {% for produto in produtos %}<article class="card sale-product">
-    <div class="product-meta"><span class="product-symbol" aria-hidden="true">{{ produto.descricao[:1] | upper }}</span><span class="muted">#{{ produto.id }} · {{ produto.categoria.nome }}</span></div>
+    <div class="product-meta"><span class="product-symbol" aria-hidden="true">{{ icon('bag', 23) }}</span><span class="muted">#{{ produto.id }} · {{ produto.categoria.nome }}</span></div>
     <h3>{{ produto.descricao }}</h3><p class="muted">{{ produto.marca.nome }} · Tamanho {{ produto.tamanho }}</p>
     <div class="product-price-row"><strong>{{ produto.preco | brl }}</strong><span class="badge {{ 'stock-empty' if produto.estoque <= 0 else ('stock-normal' if produto.estoque > 5 else '') }}">{{ produto.estoque }} em estoque</span></div>
     {% if venda and em_lancamento and produto.estoque > 0 %}
@@ -19,9 +19,9 @@
   {% else %}<div class="card empty"><h2>{{ 'Nenhum resultado encontrado' if busca else 'Seu catálogo está vazio' }}</h2><p>{{ 'Tente outra descrição ou limpe a busca.' if busca else 'Cadastre produtos para começar a vender.' }}</p><a href="{{ url_for('produtos.cadastro') }}">Cadastrar produto</a></div>{% endif %}
 </section>
 <aside class="card cart" aria-label="Carrinho e resumo da venda">
-  <div class="section-heading"><h2>Resumo da venda</h2>{% if venda %}<span class="muted">#{{ venda.id }}</span>{% endif %}</div>
+  <div class="section-heading"><h2>{{ icon('receipt', 19) }} Resumo da venda</h2>{% if venda %}<span class="muted">#{{ venda.id }}</span>{% endif %}</div>
   {% if not venda %}
-  <div class="empty"><div class="empty-symbol" aria-hidden="true">＋</div><h3>Pronto para uma nova venda?</h3><p>Inicie o atendimento para montar o carrinho.</p></div><form action="{{ url_for('vendas.criar') }}" method="post">{{ csrf(busca) }}<button class="wide" type="submit">Iniciar venda</button></form>
+  <div class="empty"><span class="empty-icon">{{ icon('bag', 27) }}</span><h3>Pronto para uma nova venda?</h3><p>Inicie o atendimento para montar o carrinho.</p></div><form action="{{ url_for('vendas.criar') }}" method="post">{{ csrf(busca) }}<button class="wide" type="submit">Iniciar venda</button></form>
   {% else %}
   {{ status_venda(venda.status) }}<p class="cart-date muted">Aberta em {{ venda.data.strftime('%d/%m/%Y às %H:%M') }}</p>
   {% if itens %}<div class="cart-items">
@@ -37,7 +37,7 @@
     </form><form action="{{ url_for('vendas.remover_item', venda_id=venda.id, item_id=item.id) }}" method="post">{{ csrf(busca) }}<button class="text-button danger-link" type="submit" aria-label="Remover {{ item.produto.descricao }}">Remover</button></form></div>
     {% else %}<p class="item-quantity">{{ item.quantidade }} unidade(s)</p>{% endif %}
   </article>{% endfor %}</div>
-  {% else %}<div class="empty"><h3>O carrinho está vazio</h3><p>Adicione produtos para confirmar os itens.</p></div>{% endif %}
+  {% else %}{{ empty_state('O carrinho está vazio', 'Adicione produtos para confirmar os itens.', 'bag') }}{% endif %}
   <div class="cart-total"><div><span>Total da venda</span><small>{{ unidades }} unidade(s)</small></div><strong>{{ venda.total | brl }}</strong></div>
   {% if em_lancamento %}<form action="{{ url_for('vendas.confirmar_itens', venda_id=venda.id) }}" method="post">{{ csrf(busca) }}<button class="wide" type="submit" {% if not itens %}disabled{% endif %}>Confirmar itens</button></form><p class="cart-hint muted">O estoque será baixado somente após confirmar o pagamento.</p>
   {% elif aguardando_pagamento %}<div class="notice warning">Itens confirmados. Confira o total e confirme apenas após receber o pagamento.</div><form action="{{ url_for('vendas.confirmar_pagamento', venda_id=venda.id) }}" method="post">{{ csrf(busca) }}<button class="wide" type="submit">Confirmar pagamento · {{ venda.total | brl }}</button></form>

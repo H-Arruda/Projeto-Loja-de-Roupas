@@ -1,4 +1,4 @@
-# Gestão de loja — V2 em construção (etapas 1 a 3)
+# Gestão de loja — V2 em construção (etapas 1 a 4)
 
 Flask + Jinja2 sobre os Models e Controllers existentes, SQLAlchemy e PostgreSQL.
 Inclui dashboard inicial, CRUDs de produtos/categorias/marcas/fornecedores e
@@ -97,7 +97,7 @@ Cada teste usa um schema aleatório próprio, removido ao terminar. Sem essa var
 os testes de integração são explicitamente ignorados. Não use o banco de produção.
 
 Detalhes: [etapa 1](docs/etapa_1_v2.md), [etapa 2](docs/etapa_2_v2.md) e
-[etapa 3](docs/etapa_3_v2.md).
+[etapa 3](docs/etapa_3_v2.md) e [etapa 4](docs/etapa_4_v2.md).
 
 ## Vendas na interface
 
@@ -114,3 +114,15 @@ não são usados. A confirmação de pagamento é operacional, sem integração 
 A navegação e as telas de vendas usam a paleta verde/bege da V2. Inter e Poppins são
 servidas localmente; as licenças estão em `web/static/fonts`. Em telas pequenas, abra
 a navegação pelo botão Menu. JavaScript cuida apenas desse comportamento visual.
+
+## Identidade visual — etapa 4
+
+A interface usa componentes consistentes: sidebar verde com destaque dourado,
+cards brancos, fundo bege, fontes locais, formulários por seção, badges de estoque
+/status e detalhes de venda em formato de resumo. O dashboard foi preparado
+visualmente para gráficos futuros, sem adicionar Plotly ou dados fictícios.
+
+O menu recolhe abaixo de 1051 px e pode ser fechado por Escape ou pela área externa.
+As tabelas mantêm rolagem horizontal interna nas telas menores. A revisão visual foi
+feita em ambiente isolado, somente leitura, com fixtures de teste em 1920×1080,
+1366×768, 1024×768 e 390×844. Não foram feitas gravações no banco da aplicação.

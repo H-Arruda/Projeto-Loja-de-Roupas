@@ -1,0 +1,27 @@
+{% macro icon(name, size=20) -%}
+{% set paths = {
+'dashboard':'M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z',
+'bag':'M5 7h14l1 14H4L5 7z M9 8V6a3 3 0 0 1 6 0v2',
+'history':'M3 11a9 9 0 1 1 3 7 M3 4v7h7 M12 7v5l3 2',
+'box':'M3 7l9-4 9 4v10l-9 4-9-4V7z M3 7l9 4 9-4 M12 11v10 M7 5l10 4',
+'tag':'M3 3h7l11 11-7 7L3 10V3z M7 7h.01',
+'mark':'M12 3l3 6 6 1-4 5 1 6-6-3-6 3 1-6-4-5 6-1 3-6z',
+'truck':'M3 5h11v12H3V5z M14 9h4l3 4v4h-7 M7 17a2 2 0 1 0 .01 0 M18 17a2 2 0 1 0 .01 0',
+'arrow':'M5 12h14 M13 6l6 6-6 6',
+'plus':'M12 5v14 M5 12h14',
+'edit':'M16 3l5 5-12 12-6 1 1-6L16 3z M13 6l5 5',
+'trash':'M3 6h18 M9 6V3h6v3 M5 6l1 15h12l1-15 M10 10v7 M14 10v7',
+'wallet':'M3 5h17v15H3V5z M16 10h5v6h-5a3 3 0 0 1 0-6z',
+'receipt':'M5 3l3 2 4-2 4 2 3-2v18l-3-2-4 2-4-2-3 2V3z M9 9h6 M9 13h6',
+'alert':'M12 3L2 21h20L12 3z M12 9v5 M12 18h.01',
+'search':'M10 3a7 7 0 1 0 0 14 7 7 0 0 0 0-14 M15 15l6 6',
+'chart':'M4 3v18h17 M8 16v-4 M13 16V8 M18 16V5',
+'check':'M5 12l4 4L19 6',
+'menu':'M4 6h16 M4 12h16 M4 18h16',
+'close':'M6 6l12 12 M6 18L18 6'
+} %}
+<svg class="icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ paths.get(name, paths['box']) }}"/></svg>
+{%- endmacro %}
+{% macro empty_state(title, description, symbol='box', href=None, action=None) -%}
+<div class="empty"><span class="empty-icon">{{ icon(symbol, 26) }}</span><h3>{{ title }}</h3><p>{{ description }}</p>{% if href %}<a class="button secondary small" href="{{ href }}">{{ action }} {{ icon('arrow', 15) }}</a>{% endif %}</div>
+{%- endmacro %}
