@@ -1,0 +1,15 @@
+{% from 'components/ui.html' import empty_state %}
+{% macro grafico(id, titulo, descricao, dados) %}
+<section class="card chart-card"><div class="section-heading"><div><h2>{{ titulo }}</h2><p class="muted section-description">{{ descricao }}</p></div></div>
+{% if dados %}
+<div class="chart-scroll"><div class="plotly-chart" id="grafico-{{ id }}" role="img" aria-label="{{ titulo }}"></div></div>
+<script type="application/json" data-chart="grafico-{{ id }}">{{ dados | tojson }}</script>
+<noscript><p class="notice">Ative o JavaScript para visualizar o gráfico. As tabelas de apoio estão disponíveis em Analytics.</p></noscript>
+{% else %}{{ empty_state('Ainda não há dados suficientes para este gráfico.', 'Os resultados aparecem após a finalização das vendas.', 'chart') }}{% endif %}
+</section>
+{% endmacro %}
+{% macro scripts_graficos() %}
+<script src="{{ url_for('static', filename='vendor/plotly/plotly-basic-3.1.0.min.js') }}" defer></script>
+<script src="{{ url_for('static', filename='vendor/plotly/plotly-locale-pt-br.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/graficos.js') }}" defer></script>
+{% endmacro %}

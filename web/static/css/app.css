@@ -1463,3 +1463,31 @@ input:disabled,select:disabled {
     scroll-behavior:auto!important
   }
 }
+
+/* Analytics — gráficos locais e seções com escopo explícito. */
+.charts-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; margin-bottom: 24px; }
+.charts-grid > *, .chart-card, .chart-scroll, .plotly-chart { min-width: 0; }
+.chart-card { overflow: hidden; }
+.chart-scroll { max-height: 460px; overflow-y: auto; overflow-x: hidden; }
+.plotly-chart { width: 100%; }
+.analytics-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.analytics-sections { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 28px; }
+.analytics-sections a { padding: 10px 16px; background: #fff; border: 1px solid #E7DDCD; border-radius: 8px; color: #1F4B43; font-weight: 600; }
+.analytics-table { margin-bottom: 24px; }
+.charts-grid .analytics-table { margin-bottom: 0; }
+.analytics-table h2 { margin-bottom: 20px; }
+.analytics-support { margin-bottom: 24px; }
+.analytics-support summary { cursor: pointer; color: #1F4B43; font-weight: 600; }
+.analytics-support[open] summary { margin-bottom: 24px; }
+.analytics-support .card { box-shadow: none; border: 1px solid #E7DDCD; }
+#historico, #estoque, #periodo { scroll-margin-top: 80px; }
+.period-filter { display: flex; gap: 16px; align-items: end; flex-wrap: wrap; }
+.period-filter label { flex: 1; min-width: 160px; }
+.period-result { display: flex; flex-direction: column; gap: 8px; margin-top: 24px; border-top: 1px solid #E7DDCD; padding-top: 20px; color: #555; }
+.period-result strong { font-size: 30px; color: #1F4B43; }
+.period-section > .card { margin-bottom: 24px; }
+@media (max-width: 800px) {
+  .charts-grid, .analytics-stats { grid-template-columns: minmax(0, 1fr); }
+  .period-filter label { width: 100%; flex-basis: 100%; }
+  .analytics-support .card { padding: 12px; }
+}

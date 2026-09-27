@@ -41,26 +41,29 @@ class InterfaceTest(unittest.TestCase):
         self.analytics.obter_indicadores.return_value = SimpleNamespace(faturamento_total=1234.5, quantidade_vendas=3, ticket_medio=411.5)
         self.analytics.produtos_mais_vendidos.return_value = []
         self.analytics.estoque_baixo.return_value = []
+        self.analytics.vendas_por_dia.return_value = []
+        self.analytics.faturamento_por_categoria.return_value = []
+        self.analytics.faturamento_por_marca.return_value = []
 
-    def test_dashboard_mantem_dados_do_controller_sem_graficos(self):
+    def test_dashboard_mantem_dados_do_controller(self):
         html = self.client.get("/").get_data(as_text=True)
         self.assertIn("R$ 1.234,50", html)
         self.assertIn("R$ 411,50", html)
         self.assertIn("Estoque crítico", html)
         self.assertIn("Todo o histórico", html)
-        self.assertNotIn("plotly", html.lower())
+        self.assertIn("plotly", html.lower())
         self.analytics.obter_indicadores.assert_called_once()
 
     def test_todos_links_sidebar_tem_rota_get_valida(self):
         parser = LinksSidebar()
         parser.feed(self.client.get("/").get_data(as_text=True))
-        self.assertEqual(len(parser.links), 7)
+        self.assertEqual(len(parser.links), 8)
         adapter = self.app.url_map.bind("localhost")
         for link in parser.links:
             with self.subTest(link=link):
                 endpoint, _ = adapter.match(link, method="GET")
                 self.assertIn(endpoint, self.app.view_functions)
-        self.assertNotIn("/analytics/", parser.links)
+        self.assertIn("/analytics/", parser.links)
 
     def test_assets_locais_disponiveis(self):
         for path in ("css/app.css", "js/navegacao.js", "favicon.svg", "fonts/Inter-Variable.ttf", "fonts/Poppins-SemiBold.ttf"):

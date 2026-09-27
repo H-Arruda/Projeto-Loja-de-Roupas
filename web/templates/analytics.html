@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% from 'components/graficos.html' import grafico, scripts_graficos %}
+{% block title %}Analytics · Gestão da loja{% endblock %}
+{% macro tabela(titulo, linhas, campos) %}
+<section class="card analytics-table"><h2>{{ titulo }}</h2>
+{% if linhas %}<div class="table-wrap" tabindex="0" role="region" aria-label="{{ titulo }}"><table><thead><tr>{% for campo, nome, formato in campos %}<th scope="col" {% if formato in ['brl', 'numero'] %}class="number"{% endif %}>{{ nome }}</th>{% endfor %}</tr></thead><tbody>
+{% for linha in linhas %}<tr>{% for campo, nome, formato in campos %}<td {% if formato in ['brl', 'numero'] %}class="number"{% endif %}>{% if formato == 'brl' %}{{ linha[campo] | brl }}{% elif formato == 'data' %}{{ linha[campo].strftime('%d/%m/%Y') }}{% elif formato == 'venda' %}<a href="{{ url_for('vendas.detalhes', venda_id=linha[campo]) }}">#{{ linha[campo] }}</a>{% else %}{{ linha[campo] }}{% endif %}</td>{% endfor %}</tr>{% endfor %}
+</tbody></table></div>{% else %}{{ empty_state('Nenhum resultado disponível', 'Não há registros para esta consulta.', 'chart') }}{% endif %}</section>
+{% endmacro %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">ANÁLISE / RESULTADOS</p><h1>Analytics</h1><p class="muted">Entenda suas vendas e acompanhe a necessidade de reposição.</p></div><a class="button secondary" href="{{ url_for('dashboard.index') }}">{{ icon('dashboard', 17) }} Visão geral</a></div>
+<nav class="analytics-sections" aria-label="Seções de Analytics"><a href="#historico">Todo o histórico</a><a href="#estoque">Estoque atual</a><a href="#periodo">Resultados do período</a></nav>
+<section id="historico"><div class="section-heading"><div><h2>Todo o histórico</h2><p class="muted">Somente vendas finalizadas. Os indicadores desta seção não são afetados pelo filtro de período.</p></div></div>
+<div class="stats analytics-stats">
+{% for titulo, valor, moeda, simbolo in [('Faturamento total', indicadores.faturamento_total, true, 'wallet'), ('Vendas finalizadas', indicadores.quantidade_vendas, false, 'bag'), ('Ticket médio', indicadores.ticket_medio, true, 'receipt')] %}
+<article class="card metric-card"><div class="metric-heading"><h2>{{ titulo }}</h2><span class="metric-icon">{{ icon(simbolo) }}</span></div><p class="metric">{{ valor | brl if moeda else valor }}</p><p class="metric-note">Todo o histórico</p></article>{% endfor %}</div>
+<div class="charts-grid">
+{{ grafico('diario', 'Faturamento ao longo do tempo', 'Receita e quantidade de vendas por dia.', graficos.diario) }}
+{{ grafico('produtos', 'Produtos mais vendidos', 'Até 5 produtos por quantidade de unidades vendidas.', graficos.produtos) }}
+{{ grafico('categorias', 'Faturamento por categoria', 'Receita acumulada de cada categoria.', graficos.categorias) }}
+{{ grafico('marcas', 'Faturamento por marca', 'Receita acumulada de cada marca.', graficos.marcas) }}
+</div>
+<details class="card analytics-support"><summary>Tabelas de apoio dos gráficos</summary><div class="charts-grid">
+{{ tabela('Vendas por dia', dias, [('data','Data','data'), ('quantidade_vendas','Vendas','numero'), ('faturamento','Faturamento','brl')]) }}
+{{ tabela('Produtos mais vendidos', produtos, [('descricao','Produto','texto'), ('quantidade_vendida','Unidades','numero')]) }}
+{{ tabela('Faturamento por categoria', categorias, [('nome','Categoria','texto'), ('faturamento','Faturamento','brl')]) }}
+{{ tabela('Faturamento por marca', marcas, [('nome','Marca','texto'), ('faturamento','Faturamento','brl')]) }}
+</div></details>
+{{ tabela('Faturamento por produto', faturamento_produtos, [('descricao','Produto','texto'), ('faturamento','Faturamento','brl')]) }}
+<div class="charts-grid">
+{{ tabela('Vendas por categoria · unidades', vendas_categorias, [('nome','Categoria','texto'), ('quantidade_vendida','Unidades vendidas','numero')]) }}
+{{ tabela('Vendas por marca · unidades', vendas_marcas, [('nome','Marca','texto'), ('quantidade_vendida','Unidades vendidas','numero')]) }}
+</div></section>
+<section id="estoque"><div class="section-heading"><div><p class="eyebrow">POSIÇÃO ATUAL</p><h2>Estoque atual</h2><p class="muted">Disponibilidade neste momento, independente do período selecionado.</p></div></div>
+<div class="charts-grid">
+{{ tabela('Estoque baixo · até 5 unidades, incluindo zero', estoque_baixo, [('descricao','Produto','texto'), ('tamanho','Tamanho','texto'), ('estoque','Estoque','numero')]) }}
+{{ tabela('Produtos sem estoque', sem_estoque, [('descricao','Produto','texto'), ('tamanho','Tamanho','texto'), ('estoque','Estoque','numero')]) }}
+</div></section>
+<section id="periodo" class="period-section"><div class="section-heading"><div><p class="eyebrow">CONSULTA POR DATAS</p><h2>Resultados do período selecionado</h2><p class="muted">O filtro abaixo afeta somente o faturamento e a lista de vendas deste bloco.</p></div></div>
+<div class="card"><form method="get" action="{{ url_for('analytics.index') }}#periodo" class="period-filter"><label>Data inicial<input type="date" name="data_inicio" value="{{ data_inicio }}" required></label><label>Data final<input type="date" name="data_fim" value="{{ data_fim }}" required></label><button class="button" type="submit">Aplicar</button><a class="button secondary" href="{{ url_for('analytics.index') }}#periodo">Limpar</a></form>
+{% if erro_periodo %}<p class="notice error" role="alert">{{ erro_periodo }}</p>{% elif periodo is not none %}<div class="period-result"><span>Faturamento do período · Vendas finalizadas</span><strong>{{ periodo.faturamento | brl }}</strong><span>{{ periodo.vendas | length }} venda(s) · Inclui o dia final completo</span></div>{% else %}<p class="muted">Selecione as duas datas para consultar as vendas e o faturamento do período.</p>{% endif %}</div>
+{% if periodo is not none %}{{ tabela('Vendas finalizadas do período', periodo.vendas, [('id','Venda','venda'), ('data','Data','data'), ('status','Status','texto'), ('total','Total','brl')]) }}{% endif %}
+</section>
+{% endblock %}
+{% block scripts %}{{ scripts_graficos() }}{% endblock %}

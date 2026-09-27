@@ -113,7 +113,7 @@ não são usados. A confirmação de pagamento é operacional, sem integração 
 
 A navegação e as telas de vendas usam a paleta verde/bege da V2. Inter e Poppins são
 servidas localmente; as licenças estão em `web/static/fonts`. Em telas pequenas, abra
-a navegação pelo botão Menu. JavaScript cuida apenas desse comportamento visual.
+a navegação pelo botão Menu. JavaScript cuida de navegação e renderização de gráficos; cálculos de negócio permanecem no backend.
 
 ## Identidade visual — etapa 4
 
@@ -126,3 +126,25 @@ O menu recolhe abaixo de 1051 px e pode ser fechado por Escape ou pela área ext
 As tabelas mantêm rolagem horizontal interna nas telas menores. A revisão visual foi
 feita em ambiente isolado, somente leitura, com fixtures de teste em 1920×1080,
 1366×768, 1024×768 e 390×844. Não foram feitas gravações no banco da aplicação.
+
+## Dashboard e Analytics — etapa 5
+
+O Dashboard apresenta quatro gráficos locais: faturamento diário, produtos mais
+vendidos, faturamento por categoria e por marca. `/analytics/` oferece gráficos,
+tabelas detalhadas e estoque atual, reutilizando o AnalyticsController sem alterações.
+
+O filtro de datas de Analytics afeta **somente** o bloco Resultados do período:
+vendas finalizadas e faturamento, incluindo o último dia até 23:59:59.999999.
+Os demais indicadores são de todo o histórico; o estoque representa a posição atual.
+A data usada é a data da venda já existente, sem mudança de fuso ou schema.
+Recarregue o Dashboard/Analytics após confirmar o pagamento no PDV.
+
+Plotly.js e o locale pt-BR são locais, com licença MIT em `web/static/vendor/plotly`.
+Não há CDN nem nova dependência Python. Execute a aplicação como antes:
+
+```powershell
+python -m flask --app web:create_app run
+python -m unittest discover -s tests -v
+```
+
+Consulte [a entrega e os limites da Etapa 5](docs/etapa_5_v2.md).

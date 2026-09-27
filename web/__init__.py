@@ -21,6 +21,7 @@ def create_app():
 
     from web.db import close_db
     from web.routes.dashboard import bp as dashboard_bp
+    from web.routes.analytics import bp as analytics_bp
     from web.routes.produtos import bp as produtos_bp
 
     from web.routes.categorias import bp as categorias_bp
@@ -31,6 +32,7 @@ def create_app():
 
     app.teardown_appcontext(close_db)
     app.register_blueprint(dashboard_bp)
+    app.register_blueprint(analytics_bp)
     app.register_blueprint(produtos_bp)
     app.register_blueprint(vendas_bp)
     app.register_blueprint(categorias_bp)
