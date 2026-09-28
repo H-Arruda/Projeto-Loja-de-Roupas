@@ -6,6 +6,6 @@
 <form method="post" class="card compact-form">
 <input type="hidden" name="csrf_token" value="{{ session['csrf_token'] }}">
 <div class="form-section-heading"><span class="form-step">{{ icon('tag', 18) }}</span><div><h2>Informações do cadastro</h2><p>O nome é obrigatório e pode ter até 100 caracteres.</p></div></div><div class="field"><label for="nome">Nome</label><input id="nome" name="nome" maxlength="100" required value="{{ nome }}"></div>
-<div class="form-actions"><a class="button secondary" href="{{ url_for(modulo ~ '.lista') }}">Cancelar</a><button type="submit">{{ icon('check', 17) }} Salvar alterações</button></div>
+<div class="form-actions"><a class="button secondary" href="{{ url_for(modulo ~ '.lista') }}">Cancelar</a><button type="submit">{{ icon('check', 17) }} {{ 'Cadastrar' if request.endpoint.endswith('.cadastro') else 'Salvar alterações' }}</button></div>
 </form>
 {% endblock %}
